@@ -1,7 +1,8 @@
 {
-  "name": "seat-map-frontend",
+  "name": "seat-app-frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

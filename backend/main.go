@@ -88,6 +88,9 @@ func main() {
 	router.HandleFunc("/seatmap", getSeatMap)
 	router.HandleFunc("/select-seat", selectSeat)
 
+	router.HandleFunc("/api/seatmap", getSeatMap)
+	router.HandleFunc("/api/select-seat", selectSeat)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
