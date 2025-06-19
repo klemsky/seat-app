@@ -5,9 +5,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeat, setSelectedSeat] = useState(null);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
+
     const fetchSeatMap = async () => {
+      setLoading(true);
+      setError(null);
+      setMessage('');
       try {
         const response = await fetch('/api/seatmap');
         if (!response.ok) {
@@ -23,11 +28,57 @@ function App() {
     };
 
     fetchSeatMap();
+
+
+
+
+
   }, []);
 
-  const handleSeatClick = (seat) => {
+  const handleSeatClick = async (seat) => {
+    setMessage('');
+
     if (seat.available && !seat.freeOfCharge && seat.storefrontSlotCode === "SEAT") {
+
       setSelectedSeat(seat);
+
+
+      try {
+        setLoading(true);
+        const response = await fetch('/api/select-seat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            seatCode: seat.code,
+
+
+            passengerName: seatMapData.seatsItineraryParts[0].segmentSeatMaps[0].passengerSeatMaps[0].passenger.passengerDetails.firstName + ' ' + seatMapData.seatsItineraryParts[0].segmentSeatMaps[0].passengerSeatMaps[0].passenger.passengerDetails.lastName,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to select seat: ${errorText}`);
+        }
+
+        const updatedData = await response.json();
+        setSeatMapData(updatedData);
+        setSelectedSeat(null);
+        setMessage(`Seat ${seat.code} successfully selected!`);
+
+      } catch (e) {
+        setError(e.message);
+        setMessage(`Error selecting seat ${seat.code}: ${e.message}`);
+        setSelectedSeat(null);
+      } finally {
+        setLoading(false);
+      }
+    } else if (!seat.available) {
+      setMessage(`Seat ${seat.code} is already taken.`);
+    } else if (seat.freeOfCharge) {
+      setMessage(`Seat ${seat.code} is free of charge and cannot be explicitly selected this way.`);
     }
   };
 
@@ -66,6 +117,13 @@ function App() {
         <h1 className="text-4xl font-extrabold text-center text-indigo-800 mb-8">
           Flight Seat Map
         </h1>
+
+        {/* Status Message */}
+        {message && (
+          <div className={`p-3 rounded-md text-center font-medium ${message.startsWith('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+            {message}
+          </div>
+        )}
 
         {/* Flight Details Section */}
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-lg shadow-md flex justify-between items-center">
@@ -122,7 +180,7 @@ function App() {
             <div className="flex justify-center mb-4 space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-green-400 rounded-md"></div>
-                <span>Available</span>
+                <span>Available (Free)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-red-400 rounded-md"></div>
@@ -130,11 +188,11 @@ function App() {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-yellow-400 rounded-md"></div>
-                <span>Premium/Extra Cost</span>
+                <span>Available (Premium/Cost)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-blue-400 rounded-md border-2 border-blue-600"></div>
-                <span>Selected</span>
+                <span>Currently Selected (Frontend)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-gray-300 rounded-md"></div>
@@ -178,9 +236,11 @@ function App() {
                       if (seat.storefrontSlotCode === "AISLE") {
                         seatClass = "w-10 h-10 flex items-center justify-center text-gray-400";
                         seatContent = " ";
+                        tooltipContent = "Aisle";
                       } else if (seat.storefrontSlotCode === "BLANK" || seat.storefrontSlotCode === "WING") {
                         seatClass = "w-10 h-10 flex items-center justify-center text-gray-400";
                         seatContent = seat.storefrontSlotCode === "WING" ? "~" : " ";
+                        tooltipContent = seat.storefrontSlotCode === "WING" ? "Wing" : "Blank Space";
                       } else if (seat.available && !seat.freeOfCharge) {
                         seatClass += " bg-yellow-400 hover:bg-yellow-500 active:scale-95";
                         tooltipContent = `Price: ${seat.total?.alternatives[0][0].amount} ${seat.total?.alternatives[0][0].currency}`;
@@ -189,8 +249,9 @@ function App() {
                         tooltipContent = "Free of charge";
                       } else {
                         seatClass += " bg-red-400 cursor-not-allowed opacity-70";
-                        tooltipContent = "Unavailable";
+                        tooltipContent = "Unavailable or Taken";
                       }
+
 
                       if (selectedSeat && selectedSeat.code === seat.code) {
                         seatClass += " border-2 border-blue-600 scale-105";
@@ -199,7 +260,7 @@ function App() {
                       return (
                         <div
                           key={seatIndex}
-                          className={seatClass + " mx-0.5"} // Add horizontal margin to separate seats
+                          className={seatClass + " mx-0.5"}
                           onClick={() => handleSeatClick(seat)}
                           title={tooltipContent}
                         >
@@ -214,34 +275,18 @@ function App() {
           </div>
         </div>
 
-        {/* Selected Seat Information */}
-        {selectedSeat && (
+        {/* Selected Seat Information (from the 'selectedSeats' array in data) */}
+        {seatMapData.selectedSeats && seatMapData.selectedSeats.length > 0 && (
           <div className="bg-purple-50 border border-purple-200 p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-purple-800 mb-4">Selected Seat</h2>
-            <div className="text-gray-700">
-              <p>
-                <span className="font-semibold">Seat Number:</span> {selectedSeat.code}
-              </p>
-              <p>
-                <span className="font-semibold">Price:</span>{" "}
-                {selectedSeat.total?.alternatives[0][0].amount}{" "}
-                {selectedSeat.total?.alternatives[0][0].currency}
-              </p>
-              <p>
-                <span className="font-semibold">Availability:</span>{" "}
-                {selectedSeat.available ? "Available" : "Not Available"}
-              </p>
-              <p>
-                <span className="font-semibold">Characteristics:</span>{" "}
-                {selectedSeat.seatCharacteristics.join(", ")}
-              </p>
-              <p>
-                <span className="font-semibold">Limitations:</span>{" "}
-                {selectedSeat.limitations.length > 0
-                  ? selectedSeat.limitations.join(", ")
-                  : "None"}
-              </p>
-            </div>
+            <h2 className="text-2xl font-bold text-purple-800 mb-4">Confirmed Selected Seats</h2>
+            <ul className="list-disc pl-5 text-gray-700">
+              {seatMapData.selectedSeats.map((s, index) => (
+                <li key={index}>
+                  <span className="font-semibold">Seat Number:</span> {s.code} (Originally{" "}
+                  {s.total ? `${s.total.alternatives[0][0].amount} ${s.total.alternatives[0][0].currency}` : "Free"})
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

@@ -21,11 +21,11 @@ type PassengerSeatMap struct {
 }
 
 type SeatMap struct {
-	RowsDisabledCauses []interface{} `json:"rowsDisabledCauses"`
-	Aircraft           string        `json:"aircraft"`
-	Cabins             []Cabin       `json:"cabins"`
-	FirstRow           int           `json:"firstRow"`
-	LastRow            int           `json:"lastRow"`
+	RowsDisabledCauses []any   `json:"rowsDisabledCauses"`
+	Aircraft           string  `json:"aircraft"`
+	Cabins             []Cabin `json:"cabins"`
+	FirstRow           int     `json:"firstRow"`
+	LastRow            int     `json:"lastRow"`
 }
 
 type Cabin struct {
@@ -87,12 +87,12 @@ type PassengerDetails struct {
 }
 
 type PassengerInfo struct {
-	DateOfBirth string        `json:"dateOfBirth"`
-	Gender      string        `json:"gender"`
-	Type        string        `json:"type"`
-	Emails      []string      `json:"emails"`
-	Phones      []interface{} `json:"phones"`
-	Address     Address       `json:"address"`
+	DateOfBirth string   `json:"dateOfBirth"`
+	Gender      string   `json:"gender"`
+	Type        string   `json:"type"`
+	Emails      []string `json:"emails"`
+	Phones      []any    `json:"phones"`
+	Address     Address  `json:"address"`
 }
 
 type Address struct {
@@ -111,10 +111,10 @@ type Preferences struct {
 }
 
 type SpecialPreferences struct {
-	MealPreference               string        `json:"mealPreference"`
-	SeatPreference               string        `json:"seatPreference"`
-	SpecialRequests              []interface{} `json:"specialRequests"`
-	SpecialServiceRequestRemarks []interface{} `json:"specialServiceRequestRemarks"`
+	MealPreference               string `json:"mealPreference"`
+	SeatPreference               string `json:"seatPreference"`
+	SpecialRequests              []any  `json:"specialRequests"`
+	SpecialServiceRequestRemarks []any  `json:"specialServiceRequestRemarks"`
 }
 
 type FrequentFlyer struct {
@@ -154,11 +154,11 @@ type SegmentOfferInformation struct {
 }
 
 type Flight struct {
-	FlightNumber          int           `json:"flightNumber"`
-	OperatingFlightNumber int           `json:"operatingFlightNumber"`
-	AirlineCode           string        `json:"airlineCode"`
-	OperatingAirlineCode  string        `json:"operatingAirlineCode"`
-	StopAirports          []interface{} `json:"stopAirports"`
-	DepartureTerminal     string        `json:"departureTerminal"`
-	ArrivalTerminal       string        `json:"arrivalTerminal"`
+	FlightNumber          int    `json:"flightNumber"`
+	OperatingFlightNumber int    `json:"operatingFlightNumber"`
+	AirlineCode           string `json:"airlineCode"`
+	OperatingAirlineCode  string `json:"operatingAirlineCode"`
+	StopAirports          []any  `json:"stopAirports"`
+	DepartureTerminal     string `json:"departureTerminal"`
+	ArrivalTerminal       string `json:"arrivalTerminal"`
 }
