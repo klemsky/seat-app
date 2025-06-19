@@ -1,6 +1,6 @@
-Seat Map Application
+# Seat Application
 
-This project provides a flight seat map application with a Golang backend and a React frontend, orchestrated using Docker Compose. It allows users to view a seat map, select seats, and persists the selected seat information.
+This project provides a flight seat application with a Golang backend and a React frontend, orchestrated using Docker Compose. It allows users to view a seat, select seats, and persists the selected seat information.
 
 How to Run the Application
 There are two primary ways to get the application up and running: using Docker (recommended for consistency) or running the backend and frontend manually.
